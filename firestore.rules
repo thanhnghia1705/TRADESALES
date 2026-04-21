@@ -1,0 +1,72 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() { return request.auth != null; }
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+
+    function getUserRole() {
+      let userDoc = get(/databases/$(database)/documents/users/$(request.auth.uid));
+      return userDoc == null ? "sales" : userDoc.data.role;
+    }
+    
+    function isAdminOrManager() {
+      let role = getUserRole();
+      return role == "admin" || role == "manager";
+    }
+
+    // users - Any signed in user can read.
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && request.auth.uid == userId; 
+      allow update: if isSignedIn() && (isAdminOrManager() || request.auth.uid == userId);
+    }
+    
+    // categories
+    match /categories/{categoryId} {
+        allow read: if isSignedIn();
+        allow write: if isSignedIn() && isAdminOrManager();
+    }
+    
+    // documents
+    match /documents/{docId} {
+        allow read: if isSignedIn();
+        allow write: if isSignedIn() && isAdminOrManager();
+    }
+    
+    // tasks
+    match /tasks/{taskId} {
+        allow read: if isSignedIn();
+        allow create: if isSignedIn() && isAdminOrManager();
+        allow update: if (isSignedIn() && (
+            isAdminOrManager() ||
+            (incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt']))
+        ));
+        allow delete: if isSignedIn() && isAdminOrManager();
+    }
+    
+    // readReceipts
+    match /readReceipts/{receiptId} {
+        allow read: if isSignedIn();
+        allow create: if isSignedIn() && incoming().userId == request.auth.uid;
+        allow delete: if isSignedIn() && isAdminOrManager();
+    }
+    
+    // regions
+    match /regions/{regionId} {
+        allow read: if isSignedIn();
+        allow write: if isSignedIn() && isAdminOrManager();
+    }
+    
+    // regionalDocs
+    match /regionalDocs/{docId} {
+        allow read: if isSignedIn();
+        allow write: if isSignedIn() && isAdminOrManager();
+    }
+  }
+}

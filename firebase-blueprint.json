@@ -1,0 +1,104 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "System users (Admin, Manager, Sales)",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "name": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "manager", "sales"] },
+        "region": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["email", "name", "role"]
+    },
+    "Category": {
+      "title": "Category",
+      "description": "Document categories and subcategories",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "parentId": { "type": ["string", "null"] },
+        "type": { "type": "string", "enum": ["main", "sub"] },
+        "order": { "type": "number" }
+      },
+      "required": ["title", "type"]
+    },
+    "Document": {
+      "title": "Document",
+      "description": "Informational posts, guidelines, schemas",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "categoryId": { "type": "string" },
+        "subcategoryId": { "type": ["string", "null"] },
+        "type": { "type": "string", "enum": ["text", "word", "excel", "image", "link"] },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "brand": { "type": "string" },
+        "status": { "type": "string", "enum": ["new", "active", "expired", "urgent"] },
+        "publishDate": { "type": "string", "format": "date-time" },
+        "expireDate": { "type": "string", "format": "date-time" },
+        "fileUrl": { "type": ["string", "null"] },
+        "authorId": { "type": "string" },
+        "isRequireReadReceipt": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "categoryId", "type", "status", "authorId", "createdAt"]
+    },
+    "Task": {
+      "title": "Task",
+      "description": "Tasks assigned to sales/teams",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "deadline": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["pending", "in-progress", "completed", "overdue"] },
+        "priority": { "type": "string", "enum": ["high", "medium", "low"] },
+        "assigneeIds": { "type": "array", "items": { "type": "string" } },
+        "region": { "type": "string" },
+        "documentId": { "type": ["string", "null"] },
+        "createdBy": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "deadline", "status", "priority", "createdBy", "createdAt"]
+    },
+    "ReadReceipt": {
+      "title": "Read Receipt",
+      "description": "Tracks who read what document",
+      "type": "object",
+      "properties": {
+        "documentId": { "type": "string" },
+        "userId": { "type": "string" },
+        "readAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["documentId", "userId", "readAt"]
+    }
+  },
+  "firestore": {
+    "users": {
+        "schema": "User",
+        "description": "Store all valid users and roles."
+    },
+    "categories": {
+      "schema": "Category",
+      "description": "Store main categories and subcategories."
+    },
+    "documents": {
+      "schema": "Document",
+      "description": "Store documents, schemes, and knowledge base items."
+    },
+    "tasks": {
+      "schema": "Task",
+      "description": "Store task assignments and deadlines."
+    },
+    "readReceipts": {
+        "schema": "ReadReceipt",
+        "description": "Store acknowledgements of documents read."
+    }
+  }
+}
