@@ -5,26 +5,26 @@
   --font-sans: "Inter", "Be Vietnam Pro", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Be Vietnam Pro", "Inter", sans-serif;
   
-  --color-brand-50: #f0f9ff;
-  --color-brand-100: #e0f2fe;
-  --color-brand-200: #bae6fd;
-  --color-brand-300: #7dd3fc;
-  --color-brand-400: #38bdf8;
-  --color-brand-500: #0ea5e9;
-  --color-brand-600: #0284c7;
-  --color-brand-700: #0369a1;
-  --color-brand-800: #075985;
-  --color-brand-900: #0c4a6e;
+  --color-brand-50: #fef2f2;
+  --color-brand-100: #fee2e2;
+  --color-brand-200: #fecaca;
+  --color-brand-300: #fca5a5;
+  --color-brand-400: #f87171;
+  --color-brand-500: #ef4444;
+  --color-brand-600: #dc2626;
+  --color-brand-700: #b91c1c;
+  --color-brand-800: #991b1b;
+  --color-brand-900: #7f1d1d;
 }
 
 @layer base {
   body {
     @apply bg-brand-50 text-slate-900 overflow-x-hidden;
     background-image: 
-      radial-gradient(at 0% 0%, hsla(202, 100%, 82%, 0.15) 0px, transparent 50%),
-      radial-gradient(at 100% 0%, hsla(210, 100%, 84%, 0.15) 0px, transparent 50%),
-      radial-gradient(at 100% 100%, hsla(202, 100%, 82%, 0.15) 0px, transparent 50%),
-      radial-gradient(at 0% 100%, hsla(210, 100%, 84%, 0.15) 0px, transparent 50%);
+      radial-gradient(at 0% 0%, hsla(0, 100%, 82%, 0.15) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, hsla(350, 100%, 84%, 0.15) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, hsla(0, 100%, 82%, 0.15) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, hsla(350, 100%, 84%, 0.15) 0px, transparent 50%);
     background-attachment: fixed;
   }
 }

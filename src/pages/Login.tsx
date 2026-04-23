@@ -17,7 +17,7 @@ export default function Login() {
       {/* Animated Background Decorative Elements */}
       <div className="fixed top-0 left-0 w-full h-full pointer-events-none z-0">
         <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-brand-200/30 rounded-full blur-[120px] animate-pulse"></div>
-        <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-200/30 rounded-full blur-[100px]"></div>
+        <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-rose-200/30 rounded-full blur-[100px]"></div>
       </div>
 
       <div className="hidden lg:flex lg:w-[60%] bg-brand-600 relative justify-center items-center p-20 z-10 overflow-hidden">

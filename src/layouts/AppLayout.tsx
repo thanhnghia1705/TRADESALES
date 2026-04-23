@@ -200,7 +200,7 @@ export default function AppLayout() {
                 <Sparkles className="w-4 h-4 text-brand-600" />
               </div>
               <span className="text-slate-500 font-semibold tracking-wide">Developed with passion by</span>
-              <span className="font-display font-black text-lg bg-clip-text text-transparent bg-gradient-to-r from-brand-600 to-indigo-600 uppercase italic">
+              <span className="font-display font-black text-lg bg-clip-text text-transparent bg-gradient-to-r from-brand-600 to-rose-600 uppercase italic">
                 nguyenthanhnghia
               </span>
             </motion.div>
