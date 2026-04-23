@@ -24,7 +24,7 @@ export default function AppLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-brand-50 flex font-sans text-slate-900 overflow-hidden">
+    <div className="min-h-screen bg-slate-50 flex font-sans text-slate-900 overflow-hidden">
       {/* Mobile sidebar */}
       <AnimatePresence>
         {mobileMenuOpen && (

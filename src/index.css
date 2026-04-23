@@ -19,7 +19,7 @@
 
 @layer base {
   body {
-    @apply bg-brand-50 text-slate-900 overflow-x-hidden;
+    @apply bg-slate-50 text-slate-900 overflow-x-hidden;
     background-image: 
       radial-gradient(at 0% 0%, hsla(0, 100%, 82%, 0.15) 0px, transparent 50%),
       radial-gradient(at 100% 0%, hsla(350, 100%, 84%, 0.15) 0px, transparent 50%),

@@ -287,14 +287,14 @@ export default function RegionalInfo() {
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-8">
+      <div className="flex flex-col lg:flex-row gap-8 mt-8">
         {/* Left Sidebar: 9 Regions */}
         <div className="w-full lg:w-80 shrink-0">
-          <div className="glass rounded-[32px] border-white/60 shadow-2xl overflow-hidden sticky top-24">
-            <div className="px-6 py-5 border-b border-white/40 bg-white/20">
-              <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">PHÂN KHU CHIẾN LƯỢC</h3>
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden sticky top-24">
+            <div className="px-6 py-5 border-b border-slate-100 bg-slate-50/50">
+              <h3 className="text-xs font-black text-slate-500 uppercase tracking-widest">PHÂN KHU CHIẾN LƯỢC</h3>
             </div>
-            <div className="p-3 space-y-2">
+            <div className="p-3 space-y-1">
               {regions.map(region => {
                 const isRegionUnlocked = isAdminOrManager || unlockedRegions.includes(region.id);
                 const isActive = activeRegion === region.id;
@@ -307,26 +307,26 @@ export default function RegionalInfo() {
                        setError('');
                     }}
                     className={cn(
-                      "w-full text-left px-5 py-4 rounded-2xl text-sm font-bold transition-all flex items-center justify-between group",
+                      "w-full text-left px-4 py-3.5 rounded-xl text-sm font-semibold transition-all flex items-center justify-between group",
                       isActive 
-                        ? "bg-brand-600 text-white shadow-xl shadow-brand-600/20" 
-                        : "text-slate-600 hover:bg-white/60 border border-transparent"
+                        ? "bg-slate-100 text-slate-900 border border-slate-200 shadow-sm" 
+                        : "text-slate-600 hover:bg-slate-50 border border-transparent"
                     )}
                   >
                     <span className="flex items-center gap-3">
                       <div className={cn(
-                        "w-10 h-10 rounded-xl flex items-center justify-center transition-all",
-                        isActive ? "bg-white/20 text-white" : "bg-white/60 text-slate-400 shadow-inner"
+                        "w-8 h-8 rounded-lg flex items-center justify-center transition-all",
+                        isActive ? "bg-white text-slate-800 shadow-sm border border-slate-200" : "bg-transparent text-slate-400 group-hover:bg-white group-hover:shadow-sm"
                       )}>
                         {isRegionUnlocked ? (
-                          <Unlock className="w-5 h-5" />
+                          <Unlock className="w-4 h-4" />
                         ) : (
-                          <Lock className="w-5 h-5" />
+                          <Lock className="w-4 h-4" />
                         )}
                       </div>
-                      <span className="line-clamp-1 uppercase tracking-tight">{region.name}</span>
+                      <span className="line-clamp-1">{region.name}</span>
                     </span>
-                    {isActive && <motion.div layoutId="activeArrow"><ChevronRight className="w-5 h-5" /></motion.div>}
+                    {isActive && <motion.div layoutId="activeArrow"><ChevronRight className="w-5 h-5 text-slate-400" /></motion.div>}
                   </button>
                 )
               })}
@@ -337,22 +337,22 @@ export default function RegionalInfo() {
         {/* Right Pane: Region Content or Password Challenge */}
         <div className="flex-1 min-w-0">
           {isUnlocked ? (
-            <div className="glass rounded-[32px] border-white/60 shadow-2xl h-full flex flex-col min-h-[600px] overflow-hidden">
-              <div className="px-8 py-8 border-b border-white/40 bg-white/30 backdrop-blur-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm h-full flex flex-col min-h-[600px] overflow-hidden">
+              <div className="px-8 py-6 border-b border-slate-100 bg-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
                  <div className="space-y-1">
                    <div className="flex items-center gap-3">
-                     <h2 className="text-2xl font-display font-black text-slate-900 uppercase italic tracking-tight">
+                     <h2 className="text-xl font-bold text-slate-900 tracking-tight">
                        {currentRegion?.name}
                      </h2>
-                     <div className="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/20">
-                       <CheckCircle2 className="w-5 h-5" />
+                     <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                       <CheckCircle2 className="w-4 h-4" />
                      </div>
                    </div>
-                   <p className="text-[13px] font-bold text-slate-500 flex items-center gap-1.5 uppercase tracking-wide">
+                   <p className="text-[13px] font-medium text-slate-500 flex items-center gap-1.5">
                      {isAdminOrManager ? (
                        <><ShieldAlert className="w-4 h-4 text-amber-500" /> QUYỀN MIỄN TRỪ QUẢN TRỊ VIÊN</>
                      ) : (
-                       <><Unlock className="w-4 h-4 text-emerald-500" /> TRUY CẬP ĐÃ ĐƯỢC XÁC THỰC</>
+                       <><Unlock className="w-4 h-4 text-emerald-500" /> TRUY CẬP ĐÃ XÁC THỰC</>
                      )}
                    </p>
                  </div>
@@ -360,77 +360,77 @@ export default function RegionalInfo() {
                  {isAdminOrManager && (
                    <button 
                      onClick={() => openDocForm()}
-                     className="flex items-center gap-3 px-8 py-4 bg-brand-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-brand-700 transition-all shadow-xl shadow-brand-600/20 active:scale-95"
+                     className="flex items-center gap-2 px-6 py-3 bg-red-600 text-white rounded-xl font-semibold text-sm transition-all shadow-md shadow-red-500/20 active:scale-95 hover:bg-red-700"
                    >
                      <Plus className="w-5 h-5" /> ĐĂNG TÀI LIỆU VÙNG
                    </button>
                  )}
               </div>
               
-              <div className="p-0 flex-1 bg-white/10">
-                <div className="divide-y divide-white/40">
+              <div className="p-0 flex-1 bg-white">
+                <div className="divide-y divide-slate-100">
                   {regionalDocs.length === 0 ? (
-                    <div className="p-20 text-center space-y-6">
-                       <div className="inline-flex items-center justify-center w-24 h-24 rounded-[32px] bg-white/60 backdrop-blur-md mb-3 border border-white shadow-xl">
-                         <FileText className="w-10 h-10 text-brand-300" />
+                    <div className="p-20 text-center space-y-4">
+                       <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-slate-50 border border-slate-100 mb-2">
+                         <FileText className="w-10 h-10 text-slate-400" />
                        </div>
                        <div>
-                         <p className="text-slate-800 font-display font-black text-2xl uppercase tracking-tight">KHU VỰC ĐANG TRỐNG</p>
-                         <p className="text-slate-500 font-medium max-w-sm mx-auto mt-2">Chưa có thông báo hay file dữ liệu nào được chia sẻ riêng cho khu vực này.</p>
+                         <p className="text-slate-900 font-bold text-lg">KHU VỰC ĐANG TRỐNG</p>
+                         <p className="text-slate-500 font-medium max-w-sm mx-auto mt-2 text-sm">Chưa có thông báo hay file dữ liệu nào được chia sẻ riêng cho khu vực này.</p>
                        </div>
                     </div>
                   ) : (
-                    <div className="divide-y divide-white/40">
+                    <div className="divide-y divide-slate-100">
                       {regionalDocs.map((doc, i) => (
                         <motion.div
                           key={doc.id}
                           initial={{ opacity: 0, x: -10 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: i * 0.05 }}
-                          className="p-8 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 group hover:bg-white/40"
+                          className="p-6 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 hover:bg-slate-50"
                         >
-                          <div className="flex gap-6 items-start sm:items-center w-full relative z-10">
+                          <div className="flex gap-5 items-start sm:items-center w-full relative z-10">
                             <div className={cn(
-                              "w-16 h-16 rounded-2xl flex items-center justify-center text-3xl shrink-0 shadow-lg border-2 transition-all group-hover:scale-110",
-                              doc.type === 'excel' ? "bg-emerald-50 text-emerald-600 border-white" :
-                              doc.type === 'pdf' ? "bg-rose-50 text-rose-600 border-white" :
-                              doc.type === 'word' ? "bg-blue-50 text-blue-600 border-white" :
-                              "bg-purple-50 text-purple-600 border-white"
+                              "w-12 h-12 rounded-xl flex items-center justify-center text-2xl shrink-0 border border-slate-100",
+                              doc.type === 'excel' ? "bg-emerald-50 text-emerald-600" :
+                              doc.type === 'pdf' ? "bg-red-50 text-red-600" :
+                              doc.type === 'word' ? "bg-blue-50 text-blue-600" :
+                              "bg-purple-50 text-purple-600"
                             )}>
                               {doc.type === 'excel' ? '📊' : doc.type === 'pdf' ? '📑' : doc.type === 'word' ? '📄' : '📝'}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <h3 className="text-xl font-display font-black text-slate-800 group-hover:text-brand-600 transition-colors tracking-tight">
+                              <h3 className="text-base font-semibold text-slate-900 transition-colors">
                                 {doc.title}
                               </h3>
                               {doc.description && (
-                                <p className="text-[15px] text-slate-500 mt-2 line-clamp-2 leading-relaxed font-medium">{doc.description}</p>
+                                <p className="text-[14px] text-slate-500 mt-1 line-clamp-2 leading-relaxed">{doc.description}</p>
                               )}
-                              <div className="flex flex-wrap items-center gap-4 mt-4 text-[11px] font-black uppercase tracking-widest text-slate-400">
-                                <span className="px-3 py-1 bg-white/60 rounded-full border border-white shadow-sm ring-1 ring-black/[0.02] text-brand-600">ZONE-CORE</span>
+                              <div className="flex flex-wrap items-center gap-3 mt-3 text-[12px] font-medium text-slate-500">
+                                <span className="px-2.5 py-0.5 bg-slate-100 rounded-md border border-slate-200 text-slate-600 uppercase text-[10px] font-bold">ZONE-CORE</span>
                                 <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" /> {formatDate(doc.createdAt)}</span>
                               </div>
                             </div>
                           </div>
                           
-                          <div className="shrink-0 flex items-center gap-3 self-end sm:self-center mt-4 sm:mt-0 relative z-10 w-full sm:w-auto">
+                          <div className="shrink-0 flex items-center gap-2 self-end sm:self-center mt-4 sm:mt-0 relative z-10 w-full sm:w-auto">
                             {isAdminOrManager && (
                               <>
-                                <button onClick={() => openDocForm(doc)} className="w-12 h-12 flex items-center justify-center text-slate-400 hover:text-brand-600 bg-white border border-white rounded-2xl shadow-lg transition-all hover:scale-105">
-                                  <Pencil className="w-5 h-5" />
+                                <button onClick={() => openDocForm(doc)} className="w-10 h-10 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-50 bg-white border border-slate-200 rounded-xl transition-colors">
+                                  <Pencil className="w-4 h-4" />
                                 </button>
-                                <button onClick={() => handleDeleteDoc(doc.id)} className="w-12 h-12 flex items-center justify-center text-slate-400 hover:text-rose-600 bg-white border border-white rounded-2xl shadow-lg transition-all hover:scale-105">
-                                  <Trash2 className="w-5 h-5" />
+                                <button onClick={() => handleDeleteDoc(doc.id)} className="w-10 h-10 flex items-center justify-center text-slate-600 hover:text-red-600 hover:bg-red-50 bg-white border border-slate-200 rounded-xl transition-colors">
+                                  <Trash2 className="w-4 h-4" />
                                 </button>
                               </>
                             )}
                             {doc.fileUrl ? (
-                              <div className="flex flex-1 sm:flex-none gap-3">
+                              <div className="flex flex-1 sm:flex-none gap-2">
                                 <a 
                                   href={doc.fileUrl} 
                                   target="_blank" 
                                   rel="noreferrer"
-                                  className="flex-1 sm:flex-none px-6 py-3.5 bg-white text-slate-600 border border-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-50 transition-all shadow-lg active:scale-95 flex items-center justify-center"
+                                  className="flex-1 sm:flex-none px-4 py-2.5 bg-white text-slate-600 border border-slate-200 rounded-xl font-semibold text-sm hover:bg-slate-50 transition-colors flex items-center justify-center"
                                 >
                                   Mở
                                 </a>
@@ -439,13 +439,13 @@ export default function RegionalInfo() {
                                   target="_blank" 
                                   rel="noreferrer"
                                   download
-                                  className="flex-[2] sm:flex-none px-8 py-3.5 bg-brand-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-brand-700 transition-all shadow-xl shadow-brand-600/20 active:scale-95 flex items-center justify-center gap-2"
+                                  className="flex-[2] sm:flex-none px-5 py-2.5 bg-red-600 text-white rounded-xl font-semibold text-sm hover:bg-red-700 transition-all shadow-md shadow-red-500/20 active:scale-95 flex items-center justify-center gap-2"
                                 >
                                   <Download className="w-4 h-4" /> Tải về
                                 </a>
                               </div>
                             ) : (
-                              <span className="px-6 py-3.5 bg-slate-100 text-slate-400 rounded-2xl font-black text-xs uppercase tracking-widest border border-white">
+                              <span className="px-5 py-2.5 bg-slate-100 text-slate-500 rounded-xl font-semibold text-sm border border-slate-200">
                                 CHỈ XEM
                               </span>
                             )}
@@ -458,33 +458,33 @@ export default function RegionalInfo() {
               </div>
             </div>
           ) : (
-            <div className="glass rounded-[32px] border-white/60 shadow-2xl h-full min-h-[600px] flex items-center justify-center p-12 relative overflow-hidden">
-               <div className="max-w-md w-full relative z-10 text-center space-y-10">
-                 <div className="w-28 h-28 bg-white/60 backdrop-blur-md rounded-[40px] flex items-center justify-center border-4 border-white shadow-2xl mx-auto transform -rotate-12">
-                   <Lock className="w-14 h-14 text-brand-400" />
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm h-full min-h-[600px] flex items-center justify-center p-12 relative overflow-hidden">
+               <div className="max-w-md w-full relative z-10 text-center space-y-8">
+                 <div className="w-24 h-24 bg-slate-50 rounded-2xl flex items-center justify-center border border-slate-100 shadow-inner mx-auto transform -rotate-6">
+                   <Lock className="w-12 h-12 text-slate-400" />
                  </div>
-                 <div className="space-y-3">
-                   <h2 className="text-3xl font-display font-black text-slate-900 tracking-tight uppercase italic">BẢO MẬT KHU VỰC</h2>
-                   <p className="text-[15px] font-medium text-slate-500 leading-relaxed">
-                     Bạn đang truy cập vào Zone <strong className="text-brand-600">{currentRegion?.name}</strong>. Đây là tài nguyên bảo mật nội bộ, vui lòng nhập mật mã được cấp để tiếp tục.
+                 <div className="space-y-2">
+                   <h2 className="text-2xl font-bold text-slate-900 tracking-tight">BẢO MẬT KHU VỰC</h2>
+                   <p className="text-sm font-medium text-slate-500 leading-relaxed">
+                     Bạn đang truy cập vào Zone <strong className="text-slate-800">{currentRegion?.name}</strong>. Đây là tài nguyên bảo mật nội bộ, vui lòng nhập mật mã được cấp để tiếp tục.
                    </p>
                  </div>
                  
-                 <form onSubmit={handleUnlock} className="space-y-6 text-left">
+                 <form onSubmit={handleUnlock} className="space-y-5 text-left">
                     <div className="relative group">
                       <input 
                         type="password"
                         value={passwordInput}
                         onChange={(e) => setPasswordInput(e.target.value)}
-                        placeholder="NHẬP MẬT MÃ ZONE..."
-                        className="w-full px-8 py-5 bg-white/60 border-2 border-white rounded-[24px] focus:ring-4 focus:ring-brand-500/20 focus:border-brand-500 outline-none text-center shadow-inner font-black tracking-[0.5em] text-brand-600 text-xl transition-all"
+                        placeholder="Mật mã..."
+                        className="w-full px-6 py-4 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none text-center shadow-sm font-mono tracking-widest text-slate-800 text-lg transition-all"
                         autoFocus
                       />
                       {error && (
                         <motion.p 
                           initial={{ opacity: 0, y: -10 }}
                           animate={{ opacity: 1, y: 0 }}
-                          className="text-rose-500 text-xs font-black uppercase tracking-widest mt-4 text-center bg-rose-50 py-3 rounded-xl border border-rose-100"
+                          className="text-red-500 text-xs font-semibold mt-3 text-center"
                         >
                           {error}
                         </motion.p>
@@ -492,16 +492,12 @@ export default function RegionalInfo() {
                     </div>
                     <button 
                       type="submit"
-                      className="w-full py-5 bg-brand-600 text-white font-black rounded-[24px] hover:bg-brand-700 transition-all shadow-2xl shadow-brand-600/20 flex items-center justify-center gap-3 text-sm uppercase tracking-[0.2em] hover:scale-[1.02] active:scale-[0.98]"
+                      className="w-full py-4 bg-slate-900 text-white font-semibold rounded-xl hover:bg-slate-800 transition-all shadow-sm flex items-center justify-center gap-2 text-sm active:scale-[0.98]"
                     >
-                      <Unlock className="w-5 h-5" /> XÁC THỰC TRUY CẬP
+                      <Unlock className="w-4 h-4" /> XÁC THỰC TRUY CẬP
                     </button>
                  </form>
                </div>
-
-               {/* Background decors for locked state */}
-               <div className="absolute top-0 right-0 w-80 h-80 bg-brand-50 rounded-bl-full opacity-30 pointer-events-none -mr-20 -mt-20"></div>
-               <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-50 rounded-tr-full opacity-30 pointer-events-none -ml-16 -mb-16"></div>
             </div>
           )}
         </div>

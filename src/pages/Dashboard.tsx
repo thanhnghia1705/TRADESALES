@@ -72,6 +72,21 @@ export default function Dashboard() {
     }
   };
   
+  const [greeting, setGreeting] = useState('');
+
+  useEffect(() => {
+    const hour = new Date().getHours();
+    if (hour >= 0 && hour < 11) {
+      setGreeting('Chào buổi sáng');
+    } else if (hour >= 11 && hour < 14) {
+      setGreeting('Chào buổi trưa');
+    } else if (hour >= 14 && hour < 18) {
+      setGreeting('Chào buổi chiều');
+    } else {
+      setGreeting('Chào buổi tối');
+    }
+  }, []);
+
   const incompleteTasksCount = tasks.filter(t => t.status !== 'completed').length;
 
   return (
@@ -80,19 +95,21 @@ export default function Dashboard() {
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-gradient-to-br from-brand-600 via-brand-500 to-indigo-600 rounded-3xl p-8 text-white flex flex-col md:flex-row items-center justify-between shadow-2xl shadow-brand-500/20 gap-6 relative overflow-hidden"
+        className="bg-gradient-to-r from-red-500 to-indigo-500 rounded-2xl p-6 text-white flex flex-col md:flex-row items-center justify-between shadow-lg gap-6 relative overflow-hidden transition-colors duration-500"
       >
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-20 -mt-20"></div>
         <div className="relative z-10 text-center md:text-left">
-          <h1 className="text-2xl md:text-3xl font-display font-bold tracking-tight">Chào buổi sáng, {userProfile?.name}! 👋</h1>
-          <p className="text-brand-100 text-sm md:text-base font-medium mt-2">
+          <h1 className="text-2xl md:text-3xl font-display font-bold tracking-tight text-white drop-shadow-md">
+            {greeting}, {userProfile?.name}! {greeting.includes('sáng') ? '☀️' : greeting.includes('trưa') ? '🍲' : greeting.includes('chiều') ? '☕' : '🌙'}
+          </h1>
+          <p className="text-white/80 text-sm md:text-base font-medium mt-2">
             {incompleteTasksCount > 0 
               ? `Hôm nay bạn có ${incompleteTasksCount} đầu việc quan trọng cần ưu tiên.`
               : 'Tuyệt vời! Bạn đã hoàn thành hết các công việc quan trọng.'}
           </p>
         </div>
         {isAdminOrManager && (
-          <Link to="/documents/new" className="relative z-10 bg-white text-brand-600 px-6 py-3 rounded-2xl text-sm font-bold hover:bg-brand-50 transition-all shadow-xl hover:scale-105 active:scale-95 whitespace-nowrap flex items-center gap-2">
+          <Link to="/documents/new" className="relative z-10 bg-white text-red-600 px-6 py-3 rounded-2xl text-sm font-bold hover:bg-slate-50 transition-all shadow-xl hover:scale-105 active:scale-95 whitespace-nowrap flex items-center gap-2">
             <Plus className="w-4 h-4" /> Tạo Thông Báo Mới
           </Link>
         )}
