@@ -31,7 +31,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const userSnap = await getDoc(userRef);
         
         if (userSnap.exists()) {
-          setUserProfile({ id: userSnap.id, ...userSnap.data() } as User);
+          const profile = { id: userSnap.id, ...userSnap.data() } as User;
+          if (profile.role === 'blocked') {
+            await auth.signOut();
+            setUserProfile(null);
+            alert('Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.');
+          } else {
+            setUserProfile(profile);
+          }
         } else {
           // If first user, make admin for testing, else sales
           const isAdmin = user.email?.includes('admin') || user.email?.includes('stv344');
