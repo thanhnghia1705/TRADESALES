@@ -16,6 +16,8 @@ export default function Documents() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const navigate = useNavigate();
 
+  const [searchTerm, setSearchTerm] = useState('');
+
   useEffect(() => {
     // Fetch categories
     const catQuery = query(collection(db, 'categories'), orderBy('order', 'asc'));
@@ -49,9 +51,21 @@ export default function Documents() {
     }
   };
 
-  const filteredDocs = activeCategory 
-    ? docs.filter(d => d.categoryId === activeCategory || d.subcategoryId === activeCategory)
-    : docs;
+  const filteredDocs = docs.filter(d => {
+    const matchesCategory = activeCategory 
+      ? (d.categoryId === activeCategory || d.subcategoryId === activeCategory)
+      : true;
+    
+    const searchLower = searchTerm.toLowerCase();
+    const matchesSearch = searchTerm 
+      ? (d.title.toLowerCase().includes(searchLower) || 
+         d.description.toLowerCase().includes(searchLower) ||
+         d.brand?.toLowerCase().includes(searchLower) ||
+         d.tags?.some(tag => tag.toLowerCase().includes(searchLower)))
+      : true;
+
+    return matchesCategory && matchesSearch;
+  });
 
   const mainCategories = categories.filter(c => c.type === 'main');
 
@@ -77,18 +91,18 @@ export default function Documents() {
 
   return (
     <div className="flex flex-col lg:flex-row gap-8 pb-10">
-      {/* Sidebar Categories */}
-      <div className="w-full lg:w-72 shrink-0 space-y-6">
+      {/* Sidebar Categories - Hidden on mobile, handled globally or horizontally if needed. For now we just implement the horizontal scroll on mobile, but matching mobile-first: block lg:w-72 */}
+      <div className="hidden md:flex w-full lg:w-72 shrink-0 flex-col space-y-6">
         <div className="sticky top-24">
           <h2 className="font-display font-black text-slate-800 px-2 mb-4 flex items-center gap-2 uppercase tracking-widest text-sm">
-            <Folder className="w-5 h-5 text-brand-500" /> THƯ VIỆC TÀI LIỆU
+            <Folder className="w-5 h-5 text-brand-500" /> CTKM & HỢP ĐỒNG
           </h2>
-          <div className="flex overflow-x-auto lg:flex-col lg:overflow-visible gap-2 pb-2 lg:pb-0 scrollbar-hide">
+          <div className="flex flex-col gap-2">
             <button
               onClick={() => setActiveCategory(null)}
               className={cn(
                 "whitespace-nowrap px-4 py-3 text-[13px] font-bold rounded-2xl transition-all text-left",
-                activeCategory === null ? "bg-brand-500 text-white shadow-lg shadow-brand-500/20" : "text-slate-600 hover:bg-white/60 hover:text-brand-600"
+                activeCategory === null ? "bg-brand-50 text-brand-600 shadow-sm border border-brand-100" : "text-slate-600 hover:bg-white/60 hover:text-brand-600"
               )}
             >
               Tất cả tài liệu
@@ -102,20 +116,20 @@ export default function Documents() {
                     onClick={() => setActiveCategory(cat.id)}
                     className={cn(
                       "whitespace-nowrap px-4 py-3 text-[13px] font-bold rounded-2xl transition-all text-left",
-                      isActive ? "bg-brand-500 text-white shadow-lg shadow-brand-500/20" : "text-slate-600 hover:bg-white/60 hover:text-brand-600"
+                      isActive ? "bg-brand-50 text-brand-600 shadow-sm border border-brand-100" : "text-slate-600 hover:bg-white/60 hover:text-brand-600"
                     )}
                   >
                     {cat.title}
                   </button>
-                  {/* Subcategories (Desktop) */}
-                  <div className="hidden lg:flex flex-col pl-4 space-y-1 relative">
+                  {/* Subcategories */}
+                  <div className="flex flex-col pl-4 space-y-1 relative">
                     {subCats.map(sub => (
                       <button
                         key={sub.id}
                         onClick={() => setActiveCategory(sub.id)}
                         className={cn(
                           "whitespace-nowrap px-4 py-2 text-xs font-semibold rounded-xl transition-all text-left group flex items-center gap-2",
-                          activeCategory === sub.id ? "text-brand-600 bg-brand-50/50" : "text-slate-400 hover:text-brand-500 hover:bg-white/40"
+                          activeCategory === sub.id ? "text-brand-600 bg-brand-50/50 border border-brand-50" : "text-slate-400 hover:text-brand-500 hover:bg-white/40"
                         )}
                       >
                         <ChevronRight className={cn("w-3 h-3 transition-transform", activeCategory === sub.id ? "translate-x-0" : "-translate-x-1 opacity-0 group-hover:opacity-100 group-hover:translate-x-0")} />
@@ -132,23 +146,25 @@ export default function Documents() {
 
       {/* Main Content */}
       <div className="flex-1 space-y-8">
-        <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div className="relative w-full max-w-xl group">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-brand-500 transition-colors" />
             <input 
               type="text" 
-              placeholder="Tìm kiếm tài liệu, kế hoạch, nhãn hàng..." 
-              className="w-full pl-12 pr-6 py-3.5 bg-white/70 backdrop-blur-sm border border-white/60 rounded-2xl text-[15px] outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white shadow-sm hover:shadow-md transition-all placeholder:text-slate-400"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Tìm kiếm tài liệu, scheme..." 
+              className="w-full pl-11 pr-6 py-3.5 bg-white/70 backdrop-blur-sm border border-brand-100 rounded-2xl text-[15px] outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent shadow-sm transition-all placeholder:text-slate-400"
             />
           </div>
-          <div className="flex gap-3 w-full xl:w-auto">
-            <button className="flex-1 xl:flex-none justify-center flex items-center gap-2 px-6 py-3.5 glass glass-hover text-slate-700 text-[13px] font-bold rounded-2xl">
+          <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+            <button className="w-full sm:w-auto justify-center flex items-center gap-2 px-6 py-3.5 bg-white border border-brand-100 text-slate-700 text-[13px] font-bold rounded-2xl shadow-sm hover:shadow-md transition-all">
               <Filter className="w-4 h-4" /> Bộ lọc
             </button>
             {isAdminOrManager && (
               <button 
                 onClick={() => navigate('/documents/new')}
-                className="flex-1 xl:flex-none justify-center flex items-center gap-2 px-6 py-3.5 bg-brand-600 text-white text-[13px] font-bold rounded-2xl hover:bg-brand-700 shadow-lg shadow-brand-600/20 transition-all hover:scale-105 active:scale-95"
+                className="w-full sm:w-auto justify-center flex items-center gap-2 px-6 py-3.5 bg-brand-600 text-white text-[13px] font-bold rounded-2xl hover:bg-brand-700 shadow-lg shadow-brand-500/30 transition-all hover:scale-105 active:scale-95"
               >
                 <Plus className="w-4 h-4" /> Thêm mới
               </button>
@@ -166,10 +182,10 @@ export default function Documents() {
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="grid gap-6 md:grid-cols-2 xl:grid-cols-3"
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
             >
                {filteredDocs.length === 0 && (
-                  <div className="col-span-full p-20 text-center glass rounded-3xl space-y-4">
+                  <div className="col-span-full p-20 text-center bg-white border border-brand-100 shadow-sm rounded-2xl space-y-4">
                     <Folder className="w-16 h-16 text-slate-200 mx-auto" />
                     <p className="text-slate-500 font-bold">Thư mục này hiện chưa có tài liệu nào.</p>
                   </div>
@@ -183,25 +199,25 @@ export default function Documents() {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       transition={{ duration: 0.4, delay: index * 0.05 }}
                       key={doc.id} 
-                      className="glass glass-hover rounded-3xl p-6 group flex flex-col h-full relative overflow-hidden"
+                      className="bg-white/80 backdrop-blur-md border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-1 hover:border-brand-200 transition-all duration-300 rounded-xl p-6 group flex flex-col h-full relative overflow-hidden focus-within:ring-2 focus-within:ring-brand-500"
                     >
-                      <div className="flex justify-between items-start gap-4 mb-5 relative z-10">
-                        <div className="w-12 h-12 glass rounded-2xl flex items-center justify-center shrink-0 shadow-inner group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
+                      <div className="flex justify-between items-start gap-4 mb-4 relative z-10">
+                        <div className="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center shrink-0 border border-slate-100 group-hover:scale-105 transition-transform duration-300">
                           {getFileIcon(doc.type)}
                         </div>
                         <div className="flex items-center gap-2">
                           {isAdminOrManager && (
-                            <div className="flex gap-1.5 p-1 bg-white/40 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="flex gap-1 p-1 bg-white border border-slate-100 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity shadow-sm">
                               <Link 
                                 to={`/documents/${doc.id}/edit`} 
-                                className="p-2 text-slate-500 hover:text-brand-600 hover:bg-white rounded-lg transition-all"
+                                className="p-1.5 text-slate-400 hover:text-brand-600 hover:bg-slate-50 rounded-md transition-all"
                                 onClick={(e) => e.stopPropagation()}
                               >
                                 <Pencil className="w-4 h-4" />
                               </Link>
                               <button
                                 onClick={(e) => handleDeleteDoc(doc.id, e)}
-                                className="p-2 text-slate-500 hover:text-rose-600 hover:bg-white rounded-lg transition-all"
+                                className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-slate-50 rounded-md transition-all"
                               >
                                 <Trash2 className="w-4 h-4" />
                               </button>
@@ -210,35 +226,35 @@ export default function Documents() {
                         </div>
                       </div>
                       
-                      <div className="mb-4 relative z-10">
+                      <div className="mb-4 relative z-10 flex-1">
                         <span className={cn(
-                          "text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full mb-3 inline-block shadow-sm ring-1 ring-white/10",
-                          doc.status === 'urgent' ? "bg-rose-500 text-white" : 
-                          doc.status === 'new' ? "bg-brand-500 text-white" : "bg-emerald-500 text-white"
+                          "text-xs font-semibold px-3 py-1 rounded-full mb-3 inline-block shadow-sm",
+                          doc.status === 'urgent' ? "bg-rose-100 text-rose-700 border border-rose-200" : 
+                          doc.status === 'new' ? "bg-brand-100 text-brand-700 border border-brand-200" : "bg-emerald-100 text-emerald-700 border border-emerald-200"
                         )}>
                           {doc.status}
                         </span>
-                        <h3 className="text-[17px] font-display font-bold text-slate-800 mb-2 group-hover:text-brand-600 transition-colors line-clamp-2 leading-tight">
-                           <Link to={`/documents/${doc.id}`} className="focus:outline-none">
+                        <h3 className="text-base font-display font-bold text-slate-800 mb-2 group-hover:text-brand-600 transition-colors line-clamp-2 leading-snug">
+                           <Link to={`/documents/${doc.id}`} className="focus:outline-none before:absolute before:inset-0">
                              {doc.title}
                            </Link>
                         </h3>
-                        <p className="text-[13px] text-slate-500 line-clamp-2 font-medium leading-relaxed opacity-80">{doc.description}</p>
+                        <p className="text-sm text-slate-500 line-clamp-3 leading-relaxed">{doc.description}</p>
                       </div>
                       
-                      <div className="flex flex-wrap gap-2 mb-6 relative z-10 mt-auto">
-                        {doc.brand && <span className="px-3 py-1 bg-indigo-50/50 text-indigo-700 rounded-lg text-[10px] font-bold border border-indigo-100/50 uppercase tracking-wider">{doc.brand}</span>}
+                      <div className="flex flex-wrap gap-2 mb-4 relative z-10 mt-auto">
+                        {doc.brand && <span className="px-2.5 py-0.5 bg-slate-100 text-slate-600 rounded-md text-[11px] font-semibold">{doc.brand}</span>}
                         {doc.tags?.slice(0, 2).map(tag => (
-                          <span key={tag} className="px-3 py-1 bg-white/50 text-slate-500 rounded-lg text-[10px] font-bold border border-white uppercase tracking-wider">#{tag}</span>
+                          <span key={tag} className="px-2.5 py-0.5 bg-slate-50 text-slate-500 rounded-md text-[11px] font-medium border border-slate-200">#{tag}</span>
                         ))}
                       </div>
 
-                      <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400 font-bold relative z-10 italic">
+                      <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400 font-medium relative z-10">
                          <div className="flex items-center gap-1.5">
-                            <Folder className="w-3 h-3" />
-                            <span className="truncate max-w-[120px] uppercase tracking-wide">{category?.title || 'Chưa phân loại'}</span>
+                            <Folder className="w-3.5 h-3.5 text-slate-400" />
+                            <span className="truncate max-w-[120px]">{category?.title || 'Chưa phân loại'}</span>
                          </div>
-                         <span className="text-slate-500">{formatDate(doc.publishDate || doc.createdAt)}</span>
+                         <span className="text-slate-400">{formatDate(doc.publishDate || doc.createdAt)}</span>
                       </div>
                    </motion.div>
                  )

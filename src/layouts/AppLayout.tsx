@@ -12,7 +12,7 @@ export default function AppLayout() {
 
   const navigation = [
     { name: 'Dashboard', href: '/', icon: LayoutDashboard },
-    { name: 'Tài liệu & Scheme', href: '/documents', icon: FileText },
+    { name: 'CTKM & Hợp đồng', href: '/documents', icon: FileText },
     { name: 'Công việc / Deadline', href: '/tasks', icon: CheckSquare },
     { name: 'Thông báo', href: '/notifications', icon: Bell },
     { name: 'Thông tin vùng', href: '/regional', icon: Map },
