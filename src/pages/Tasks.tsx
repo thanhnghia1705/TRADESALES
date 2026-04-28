@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { collection, query, orderBy, onSnapshot, getDocs, addDoc, updateDoc, doc } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, getDocs, addDoc, updateDoc, doc, deleteDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../context/AuthContext';
 import { Task, User } from '../types';
@@ -15,14 +15,36 @@ export default function Tasks() {
   // Create task states
   const [showModal, setShowModal] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [newTask, setNewTask] = useState<Partial<Task>>({
     title: '',
     description: '',
     deadline: new Date().toISOString().slice(0, 10),
     priority: 'medium',
     assigneeIds: [],
-    status: 'pending'
+    status: 'pending',
+    links: []
   });
+
+  const handleAddLink = () => {
+    setNewTask(prev => ({ ...prev, links: [...(prev.links || []), ''] }));
+  };
+
+  const handleUpdateLink = (index: number, value: string) => {
+    setNewTask(prev => {
+      const newLinks = [...(prev.links || [])];
+      newLinks[index] = value;
+      return { ...prev, links: newLinks };
+    });
+  };
+
+  const handleRemoveLink = (index: number) => {
+    setNewTask(prev => {
+      const newLinks = [...(prev.links || [])];
+      newLinks.splice(index, 1);
+      return { ...prev, links: newLinks };
+    });
+  };
 
   useEffect(() => {
     if (!userProfile) return;
@@ -65,6 +87,23 @@ export default function Tasks() {
     }
   };
 
+  const handleDeleteTask = async (taskId: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (deletingId === taskId) {
+      try {
+        await deleteDoc(doc(db, 'tasks', taskId));
+        setDeletingId(null);
+      } catch (err) {
+        console.error('Error deleting task:', err);
+        alert('Có lỗi xảy ra khi xóa công việc.');
+      }
+    } else {
+      setDeletingId(taskId);
+      setTimeout(() => setDeletingId(null), 3000);
+    }
+  };
+
   const handleCreateTask = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTask.title || newTask.assigneeIds?.length === 0) {
@@ -86,7 +125,8 @@ export default function Tasks() {
         deadline: new Date().toISOString().slice(0, 10),
         priority: 'medium',
         assigneeIds: [],
-        status: 'pending'
+        status: 'pending',
+        links: []
       });
     } catch (err) {
       console.error(err);
@@ -141,15 +181,17 @@ export default function Tasks() {
                   <th className="px-6 py-5 w-40">Thời hạn (Deadline)</th>
                   <th className="px-6 py-5 w-32">Mức độ</th>
                   <th className="px-6 py-5 w-40 text-center">Trạng thái</th>
+                  <th className="px-6 py-5 w-16"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/40">
                 {tasks.length === 0 && (
-                  <tr><td colSpan={5} className="px-6 py-20 text-center text-slate-400 font-bold italic">Chưa có đầu việc nào được phân công.</td></tr>
+                  <tr><td colSpan={6} className="px-6 py-20 text-center text-slate-400 font-bold italic">Chưa có đầu việc nào được phân công.</td></tr>
                 )}
                 {tasks.map((task, index) => {
                   const isOverdue = new Date(task.deadline) < new Date() && task.status !== 'completed';
                   const isCompleted = task.status === 'completed';
+                  const canDelete = isAdminOrManager;
                   
                   return (
                     <motion.tr 
@@ -184,6 +226,23 @@ export default function Tasks() {
                           {task.title}
                         </div>
                         <div className="text-[13px] text-slate-500 line-clamp-1 mt-1 font-medium opacity-70">{task.description}</div>
+                        {(task.links && task.links.length > 0) && (
+                          <div className="flex flex-wrap gap-2 mt-2">
+                             {task.links.filter(l => l.trim() !== '').map((link, idx) => (
+                                <a 
+                                  key={idx} 
+                                  href={link} 
+                                  target="_blank" 
+                                  rel="noreferrer"
+                                  onClick={e => e.stopPropagation()}
+                                  className="inline-flex items-center gap-1.5 px-3 py-1 bg-brand-50 hover:bg-brand-100 text-brand-600 text-[11px] font-bold rounded-lg border border-brand-100/50 transition-colors"
+                                >
+                                  <Paperclip className="w-3 h-3" />
+                                  Link đính kèm {idx + 1}
+                                </a>
+                             ))}
+                          </div>
+                        )}
                       </td>
                       <td className="px-6 py-5">
                         <div className={cn(
@@ -213,6 +272,20 @@ export default function Tasks() {
                         )}>
                           {isOverdue ? 'Quá hạn' : isCompleted ? 'Hoàn tất' : task.status === 'in-progress' ? 'Đang làm' : 'Chưa làm'}
                         </span>
+                      </td>
+                      <td className="px-6 py-5 text-right">
+                        {canDelete && (
+                           <button
+                             onClick={(e) => handleDeleteTask(task.id, e)}
+                             className={cn(
+                               "p-2 rounded-xl transition-all",
+                               deletingId === task.id ? "bg-rose-500 text-white" : "text-slate-300 hover:text-rose-600 hover:bg-rose-50 md:opacity-0 md:group-hover:opacity-100"
+                             )}
+                             title={deletingId === task.id ? "Nhấn lần nữa để xóa" : "Xóa công việc"}
+                           >
+                              <Trash2 className="w-5 h-5" />
+                           </button>
+                        )}
                       </td>
                     </motion.tr>
                   );
@@ -269,6 +342,39 @@ export default function Tasks() {
                       className="w-full px-5 py-3.5 bg-white border border-white rounded-2xl outline-none focus:ring-4 focus:ring-brand-500/10 shadow-sm transition-all font-medium text-slate-600 min-h-[100px] resize-none"
                       placeholder="Các yêu cầu cụ thể và ghi chú..."
                     />
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between mb-2 ml-1">
+                      <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest">Liên kết đính kèm</label>
+                      <button type="button" onClick={handleAddLink} className="text-[11px] font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1">
+                        <Plus className="w-3 h-3" /> Thêm link
+                      </button>
+                    </div>
+                    {(!newTask.links || newTask.links.length === 0) ? (
+                      <div className="text-[13px] text-slate-400 italic bg-white/50 border border-white rounded-2xl px-5 py-3.5 text-center">
+                        Chưa có liên kết nào (tuỳ chọn)
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {newTask.links.map((link, index) => (
+                           <div key={index} className="flex gap-2 isolate relative group">
+                              <div className="absolute top-1/2 left-4 -translate-y-1/2 opacity-40 group-focus-within:opacity-100 group-hover:opacity-100 transition-opacity">
+                                <Paperclip className="w-4 h-4 text-slate-400" />
+                              </div>
+                              <input 
+                                type="url"
+                                value={link}
+                                onChange={e => handleUpdateLink(index, e.target.value)}
+                                className="w-full pl-11 pr-5 py-3 bg-white border border-white rounded-xl outline-none focus:ring-4 focus:ring-brand-500/10 shadow-sm transition-all font-medium text-slate-600 text-sm"
+                                placeholder="https://..."
+                              />
+                              <button type="button" onClick={() => handleRemoveLink(index)} className="w-11 shrink-0 bg-white border border-white rounded-xl flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors">
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                           </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>

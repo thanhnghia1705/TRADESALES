@@ -41,6 +41,7 @@ export default function RegionalInfo() {
   
   const [regions, setRegions] = useState<RegionConfig[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deletingDocId, setDeletingDocId] = useState<string | null>(null);
   
   const [activeRegion, setActiveRegion] = useState<string>('v1');
   const [unlockedRegions, setUnlockedRegions] = useState<string[]>([]);
@@ -194,13 +195,18 @@ export default function RegionalInfo() {
     }
   };
 
-  const handleDeleteDoc = async (id: string) => {
-    if (confirm('Bạn có chắc chắn muốn xóa tài liệu này khỏi vùng không?')) {
+  const handleDeleteDoc = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (deletingDocId === id) {
       try {
         await deleteDoc(doc(db, 'regionalDocs', id));
+        setDeletingDocId(null);
       } catch (err) {
         console.error(err);
       }
+    } else {
+      setDeletingDocId(id);
+      setTimeout(() => setDeletingDocId(null), 3000);
     }
   };
 
@@ -419,7 +425,10 @@ export default function RegionalInfo() {
                                 <button onClick={() => openDocForm(doc)} className="w-10 h-10 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-50 bg-white border border-slate-200 rounded-xl transition-colors">
                                   <Pencil className="w-4 h-4" />
                                 </button>
-                                <button onClick={() => handleDeleteDoc(doc.id)} className="w-10 h-10 flex items-center justify-center text-slate-600 hover:text-red-600 hover:bg-red-50 bg-white border border-slate-200 rounded-xl transition-colors">
+                                <button onClick={(e) => handleDeleteDoc(doc.id, e)} className={cn(
+                                  "w-10 h-10 flex items-center justify-center rounded-xl transition-colors text-white",
+                                  deletingDocId === doc.id ? "bg-red-500 hover:bg-red-600" : "text-slate-600 hover:text-red-600 hover:bg-red-50 bg-white border border-slate-200"
+                                )} title={deletingDocId === doc.id ? "Nhấn lần nữa để xóa" : "Xóa"}>
                                   <Trash2 className="w-4 h-4" />
                                 </button>
                               </>

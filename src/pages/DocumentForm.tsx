@@ -5,7 +5,7 @@ import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../lib/firebase';
 import { useAuth } from '../context/AuthContext';
 import { Category, Document as AppDoc } from '../types';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, Plus, Paperclip, Trash2 } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 export default function DocumentForm() {
@@ -76,6 +76,26 @@ export default function DocumentForm() {
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
+  };
+
+  const handleAddLink = () => {
+    setFormData(prev => ({ ...prev, links: [...(prev.links || []), ''] }));
+  };
+
+  const handleUpdateLink = (index: number, value: string) => {
+    setFormData(prev => {
+      const newLinks = [...(prev.links || [])];
+      newLinks[index] = value;
+      return { ...prev, links: newLinks };
+    });
+  };
+
+  const handleRemoveLink = (index: number) => {
+    setFormData(prev => {
+      const newLinks = [...(prev.links || [])];
+      newLinks.splice(index, 1);
+      return { ...prev, links: newLinks };
+    });
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -314,14 +334,41 @@ export default function DocumentForm() {
              </div>
 
              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Hoặc dán Link trực tiếp (Drive/Web)</label>
-                <input 
-                  name="fileUrl"
-                  value={formData.fileUrl}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
-                  placeholder="https://drive.google.com/..."
-                />
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-sm font-medium text-slate-700">Hoặc dán Link trực tiếp (Drive/Web)</label>
+                  <button type="button" onClick={handleAddLink} className="text-xs font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-1 bg-emerald-50 px-2 py-1 rounded-md">
+                    <Plus className="w-3 h-3" /> Thêm link
+                  </button>
+                </div>
+                
+                <div className="space-y-2">
+                  <input 
+                    name="fileUrl"
+                    value={formData.fileUrl || ''}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                    placeholder="https://drive.google.com/... (Link chính)"
+                  />
+                  
+                  {formData.links && formData.links.map((link, index) => (
+                    <div key={index} className="flex gap-2 isolate relative group">
+                      <div className="absolute top-1/2 left-4 -translate-y-1/2 opacity-40 group-focus-within:opacity-100 group-hover:opacity-100 transition-opacity">
+                        <Paperclip className="w-4 h-4 text-emerald-600" />
+                      </div>
+                      <input 
+                        type="url"
+                        value={link}
+                        onChange={e => handleUpdateLink(index, e.target.value)}
+                        className="w-full pl-11 pr-5 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-emerald-500 transition-all font-medium text-slate-600 text-sm"
+                        placeholder="https://..."
+                      />
+                      <button type="button" onClick={() => handleRemoveLink(index)} className="w-10 shrink-0 border border-slate-300 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-200 transition-colors">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                
                 <p className="text-[10px] text-slate-400 mt-1 italic italic">Lưu ý: Nếu dán link Drive/Google Docs, hãy đảm bảo quyền truy cập là 'Bất kỳ ai có đường liên kết'.</p>
              </div>
           </div>

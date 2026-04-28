@@ -4,7 +4,7 @@ import { doc, getDoc, collection, query, where, getDocs, setDoc } from 'firebase
 import { db } from '../lib/firebase';
 import { useAuth } from '../context/AuthContext';
 import { Document as AppDocument, Category } from '../types';
-import { ArrowLeft, Download, FileText, CheckCircle2, Clock, Calendar, Tag, Layers, ChevronRight, Trash2 } from 'lucide-react';
+import { ArrowLeft, Download, FileText, CheckCircle2, Clock, Calendar, Tag, Layers, ChevronRight, Trash2, Link as LinkIcon } from 'lucide-react';
 import { cn, formatDate } from '../lib/utils';
 import { deleteDoc } from 'firebase/firestore';
 import { motion } from 'motion/react';
@@ -19,6 +19,7 @@ export default function DocumentDetail() {
   const [hasRead, setHasRead] = useState(false);
   const [loading, setLoading] = useState(true);
   const [confirming, setConfirming] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id || !userProfile) return;
@@ -77,7 +78,7 @@ export default function DocumentDetail() {
 
   const handleDelete = async () => {
     if (!id) return;
-    if (confirm('Bạn có chắc chắn muốn xóa tài liệu này? Hành động này không thể hoàn tác.')) {
+    if (deletingId === id) {
       try {
         await deleteDoc(doc(db, 'documents', id));
         navigate('/documents');
@@ -85,6 +86,9 @@ export default function DocumentDetail() {
         console.error(err);
         alert('Có lỗi xảy ra khi xóa tài liệu.');
       }
+    } else {
+      setDeletingId(id);
+      setTimeout(() => setDeletingId(null), 3000);
     }
   };
 
@@ -120,9 +124,13 @@ export default function DocumentDetail() {
                 </Link>
                 <button 
                   onClick={handleDelete}
-                  className="flex-1 sm:flex-none px-6 py-3 bg-rose-50 text-rose-600 font-bold border border-rose-100 rounded-2xl shadow-sm hover:bg-rose-100 transition-all text-sm flex items-center justify-center gap-2"
+                  className={cn(
+                    "flex-1 sm:flex-none px-6 py-3 font-bold border rounded-2xl shadow-sm transition-all text-sm flex items-center justify-center gap-2",
+                    deletingId === docData.id ? "bg-rose-500 text-white border-rose-500" : "bg-rose-50 text-rose-600 border-rose-100 hover:bg-rose-100"
+                  )}
+                  title={deletingId === docData.id ? "Nhấn lần nữa để xóa" : "Xóa"}
                 >
-                  <Trash2 className="w-4 h-4" /> Xóa
+                  <Trash2 className="w-4 h-4" /> {deletingId === docData.id ? 'Xác nhận xóa' : 'Xóa'}
                 </button>
              </div>
            )}
@@ -197,7 +205,7 @@ export default function DocumentDetail() {
           )}
 
           {/* Attachment Box and Preview */}
-          {docData.fileUrl && (
+          {(docData.fileUrl || (docData.links && docData.links.length > 0)) && (
              <div className="space-y-8">
                <div className="bg-gradient-to-br from-brand-600 to-indigo-600 rounded-[32px] p-8 flex flex-col xl:flex-row items-center justify-between gap-8 shadow-2xl shadow-brand-500/20 text-white relative overflow-hidden">
                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.2),transparent)] pointer-events-none"></div>
@@ -207,99 +215,50 @@ export default function DocumentDetail() {
                    </div>
                    <div>
                      <h4 className="font-display font-black text-xl tracking-tight">Tải xuống tệp đính kèm</h4>
-                     <p className="text-brand-100 text-sm font-medium mt-1">Định dạng {docData.type.toUpperCase()} • Đã sẵn sàng để sử dụng</p>
+                     <p className="text-brand-100 text-sm font-medium mt-1">Các liên kết và tệp đính kèm • Đã sẵn sàng để sử dụng</p>
                    </div>
                  </div>
-                 <div className="flex flex-col sm:flex-row gap-4 w-full xl:w-auto relative z-10">
-                    <a 
-                      href={docData.fileUrl} 
-                      target="_blank" 
-                      rel="noreferrer"
-                      className="px-8 py-4 bg-white/10 backdrop-blur-md text-white border border-white/20 rounded-2xl font-bold text-sm text-center hover:bg-white/20 transition-all shadow-xl active:scale-95"
-                    >
-                      Xem bản gốc
-                    </a>
-                    <a 
-                      href={docData.fileUrl} 
-                      download
-                      target="_blank"
-                      rel="noreferrer"
-                      className="px-8 py-4 bg-white text-brand-600 rounded-2xl font-black text-sm text-center hover:bg-brand-50 transition-all shadow-xl active:scale-95 flex items-center justify-center gap-2"
-                    >
-                      <Download className="w-4 h-4" /> Tải về ngay
-                    </a>
+                 
+                 <div className="flex flex-col gap-3 w-full xl:w-auto relative z-10">
+                   {docData.fileUrl && (
+                     <div className="flex flex-col sm:flex-row gap-3">
+                        <a 
+                          href={docData.fileUrl} 
+                          target="_blank" 
+                          rel="noreferrer"
+                          className="px-8 py-4 bg-white/10 backdrop-blur-md text-white border border-white/20 rounded-2xl font-bold text-sm text-center hover:bg-white/20 transition-all shadow-xl active:scale-95"
+                        >
+                          Xem tệp chính
+                        </a>
+                        <a 
+                          href={docData.fileUrl} 
+                          download
+                          target="_blank"
+                          rel="noreferrer"
+                          className="px-8 py-4 bg-white text-brand-600 rounded-2xl font-black text-sm text-center hover:bg-brand-50 transition-all shadow-xl active:scale-95 flex items-center justify-center gap-2"
+                        >
+                          <Download className="w-4 h-4" /> Tải tệp chính
+                        </a>
+                     </div>
+                   )}
+                   {docData.links && docData.links.length > 0 && (
+                     <div className="flex flex-col gap-2 mt-2 w-full">
+                       {docData.links.map((link, idx) => link.trim() && (
+                          <a 
+                            key={idx}
+                            href={link} 
+                            target="_blank" 
+                            rel="noreferrer"
+                            className="px-6 py-3 bg-white/10 backdrop-blur-md text-white border border-white/20 rounded-xl font-bold text-sm text-center hover:bg-white/20 transition-all shadow-md flex items-center justify-center gap-2"
+                          >
+                            <LinkIcon className="w-4 h-4" /> Liên kết đính kèm {idx + 1}
+                          </a>
+                       ))}
+                     </div>
+                   )}
                  </div>
                </div>
 
-               {/* Visual Preview based on type */}
-               {docData.fileUrl && (
-                 <div className="space-y-6">
-                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 ml-1">
-                      <Layers className="w-4 h-4 text-brand-500" /> BẢN XEM TRƯỚC TÀI LIỆU
-                    </h3>
-                    
-                    {/* Detection logic for direct files vs web links */}
-                    {(docData.type === 'image' || docData.fileUrl.match(/\.(jpg|jpeg|png|gif|webp)/i)) ? (
-                      <div className="rounded-[32px] glass p-4 shadow-2xl border-white/60">
-                         <img 
-                           src={docData.fileUrl} 
-                           alt={docData.title} 
-                           className="w-full max-h-[800px] object-contain rounded-2xl shadow-inner bg-white/20 backdrop-blur-sm"
-                           referrerPolicy="no-referrer"
-                         />
-                      </div>
-                    ) : docData.type === 'pdf' ? (
-                      <div className="rounded-[32px] glass p-4 shadow-2xl border-white/60 h-[700px]">
-                         <iframe 
-                           src={docData.fileUrl} 
-                           className="w-full h-full border-none rounded-2xl shadow-inner bg-white/20 backdrop-blur-sm"
-                           title="File Preview"
-                         />
-                      </div>
-                    ) : (docData.type === 'word' || docData.type === 'excel') && !docData.fileUrl.includes('docs.google.com') ? (
-                      <div className="space-y-4">
-                        <div className="rounded-[32px] glass p-4 shadow-2xl border-white/60 h-[750px] relative">
-                           <iframe 
-                             src={`https://docs.google.com/viewer?url=${encodeURIComponent(docData.fileUrl)}&embedded=true`}
-                             className="w-full h-full border-none rounded-2xl shadow-inner bg-white"
-                             title="Document Preview"
-                           />
-                        </div>
-                        <div className="p-6 bg-brand-50/50 border border-brand-100/50 rounded-2xl text-[13px] text-brand-700 flex items-start gap-4">
-                           <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shrink-0 shadow-sm">
-                             <FileText className="w-5 h-5" />
-                           </div>
-                           <div>
-                             <p className="font-bold">Hệ thống đồng bộ Viewer:</p>
-                             <p className="font-medium opacity-80">Đang hiển thị qua trình xem tệp của Google. Nếu bạn muốn chỉnh sửa, hãy tải tệp về hoặc mở liên kết gốc.</p>
-                           </div>
-                        </div>
-                      </div>
-                    ) : docData.fileUrl.includes('docs.google.com') || docData.fileUrl.includes('drive.google.com') ? (
-                      <div className="p-16 glass rounded-[32px] text-center space-y-6 shadow-2xl border-white/60 border-2 border-dashed">
-                         <div className="w-24 h-24 bg-white/60 backdrop-blur-md rounded-[32px] shadow-xl flex items-center justify-center mx-auto border border-white">
-                            <Layers className="w-12 h-12 text-brand-500" />
-                         </div>
-                         <div>
-                           <h4 className="font-display font-black text-2xl text-slate-800">Liên kết Đám mây (G-Workspace)</h4>
-                           <p className="text-[15px] text-slate-500 max-w-md mx-auto mt-2 font-medium">Tài liệu này được đồng bộ trực tiếp từ Google Drive. Bạn có thể cộng tác và chỉnh sửa trực tuyến.</p>
-                         </div>
-                         <a 
-                           href={docData.fileUrl} 
-                           target="_blank" 
-                           rel="noreferrer"
-                           className="inline-flex items-center gap-3 px-10 py-5 bg-brand-600 text-white rounded-2xl font-black hover:bg-brand-700 transition-all shadow-2xl shadow-brand-600/20 hover:scale-105 active:scale-95"
-                         >
-                           Mở không gian làm việc <ChevronRight className="w-5 h-5" />
-                         </a>
-                      </div>
-                    ) : (
-                      <div className="p-16 glass rounded-[32px] text-center text-slate-400 font-bold border-white/60">
-                         Không khả dụng bản xem trước cho loại tệp này. Vui lòng tải xuống để xem chi tiết.
-                      </div>
-                    )}
-                 </div>
-               )}
              </div>
           )}
         </div>

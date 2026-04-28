@@ -28,6 +28,7 @@ export interface Document {
   publishDate?: string;
   expireDate?: string;
   fileUrl: string | null;
+  links?: string[];
   authorId: string;
   isRequireReadReceipt?: boolean;
   createdAt: string;
@@ -44,6 +45,7 @@ export interface Task {
   assigneeIds: string[];
   region?: string;
   documentId: string | null;
+  links?: string[];  // Multiple links attachment for task
   createdBy: string;
   createdAt: string;
   updatedAt: string;

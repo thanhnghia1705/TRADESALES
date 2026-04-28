@@ -12,6 +12,7 @@ export default function CategoryManager() {
   const navigate = useNavigate();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   
   const [showModal, setShowModal] = useState(false);
   const [editingCat, setEditingCat] = useState<Partial<Category>>({
@@ -58,14 +59,19 @@ export default function CategoryManager() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (confirm('Bạn có chắc chắn muốn xóa danh mục này? Các tài liệu bên trong có thể mất liên kết.')) {
+  const handleDelete = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (deletingId === id) {
       try {
         await deleteDoc(doc(db, 'categories', id));
+        setDeletingId(null);
       } catch (err) {
         console.error(err);
         alert('Có lỗi xảy ra khi xóa!');
       }
+    } else {
+      setDeletingId(id);
+      setTimeout(() => setDeletingId(null), 3000);
     }
   };
 
@@ -117,7 +123,14 @@ export default function CategoryManager() {
                     <button onClick={() => openForm(main)} className="p-1.5 text-slate-400 hover:text-emerald-600 bg-white rounded shadow-sm border border-slate-200 transition-colors">
                       <Pencil className="w-4 h-4" />
                     </button>
-                    <button onClick={() => handleDelete(main.id)} className="p-1.5 text-slate-400 hover:text-rose-600 bg-white rounded shadow-sm border border-slate-200 transition-colors">
+                    <button 
+                      onClick={(e) => handleDelete(main.id, e)} 
+                      className={cn(
+                        "p-1.5 rounded shadow-sm border transition-colors",
+                        deletingId === main.id ? "bg-rose-500 text-white border-rose-500 hover:bg-rose-600" : "bg-white text-slate-400 border-slate-200 hover:text-rose-600"
+                      )}
+                      title={deletingId === main.id ? "Nhấn lần nữa để xóa" : "Xóa"}
+                    >
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
@@ -133,7 +146,14 @@ export default function CategoryManager() {
                       <button onClick={() => openForm(sub)} className="p-1.5 text-slate-400 hover:text-emerald-600 bg-white rounded shadow-sm border border-slate-200 transition-colors">
                         <Pencil className="w-3.5 h-3.5" />
                       </button>
-                      <button onClick={() => handleDelete(sub.id)} className="p-1.5 text-slate-400 hover:text-rose-600 bg-white rounded shadow-sm border border-slate-200 transition-colors">
+                      <button 
+                        onClick={(e) => handleDelete(sub.id, e)} 
+                        className={cn(
+                          "p-1.5 rounded shadow-sm border transition-colors",
+                          deletingId === sub.id ? "bg-rose-500 text-white border-rose-500 hover:bg-rose-600" : "bg-white text-slate-400 border-slate-200 hover:text-rose-600"
+                        )}
+                        title={deletingId === sub.id ? "Nhấn lần nữa để xóa" : "Xóa"}
+                      >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>

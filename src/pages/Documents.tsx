@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { Document, Category } from '../types';
 import { FileText, FileSpreadsheet, Image as ImageIcon, Link as LinkIcon, Search, Filter, Folder, ChevronRight, Download, Plus, Pencil, Trash2 } from 'lucide-react';
 import { cn, formatDate } from '../lib/utils';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { deleteDoc, doc, collection, query, orderBy, onSnapshot, where } from 'firebase/firestore';
 
@@ -14,9 +14,18 @@ export default function Documents() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
+
+  useEffect(() => {
+    const q = searchParams.get('search');
+    if (q !== null) {
+      setSearchTerm(q);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     // Fetch categories
@@ -41,13 +50,17 @@ export default function Documents() {
   const handleDeleteDoc = async (docId: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (confirm('Bạn có chắc chắn muốn xóa tài liệu này? Hành động này không thể hoàn tác.')) {
+    if (deletingId === docId) {
       try {
         await deleteDoc(doc(db, 'documents', docId));
+        setDeletingId(null);
       } catch (err) {
         console.error(err);
         alert('Có lỗi xảy ra khi xóa tài liệu.');
       }
+    } else {
+      setDeletingId(docId);
+      setTimeout(() => setDeletingId(null), 3000);
     }
   };
 
@@ -217,7 +230,11 @@ export default function Documents() {
                               </Link>
                               <button
                                 onClick={(e) => handleDeleteDoc(doc.id, e)}
-                                className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-slate-50 rounded-md transition-all"
+                                className={cn(
+                                  "p-1.5 rounded-md transition-all text-white",
+                                  deletingId === doc.id ? "bg-rose-500 hover:bg-rose-600" : "text-slate-400 hover:text-rose-600 hover:bg-slate-50"
+                                )}
+                                title={deletingId === doc.id ? "Nhấn lần nữa để xóa" : "Xóa"}
                               >
                                 <Trash2 className="w-4 h-4" />
                               </button>

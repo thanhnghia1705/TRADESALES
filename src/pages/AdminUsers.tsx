@@ -13,6 +13,7 @@ export default function AdminUsers() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   if (!isAdminOrManager) {
     return <Navigate to="/" replace />;
@@ -45,13 +46,18 @@ export default function AdminUsers() {
       alert('Bạn không thể xóa chính mình.');
       return;
     }
-    if (!window.confirm('Bạn có chắc chắn muốn xóa người dùng này? Dữ liệu của họ trong hệ thống (như task) sẽ không bị xóa nhưng họ sẽ mất quyền truy cập.')) return;
-
-    try {
-      await deleteDoc(doc(db, 'users', userId));
-    } catch (error) {
-      console.error('Error deleting user:', error);
-      alert('Không thể xóa người dùng.');
+    
+    if (deletingId === userId) {
+      try {
+        await deleteDoc(doc(db, 'users', userId));
+        setDeletingId(null);
+      } catch (error) {
+        console.error('Error deleting user:', error);
+        alert('Không thể xóa người dùng.');
+      }
+    } else {
+      setDeletingId(userId);
+      setTimeout(() => setDeletingId(null), 3000);
     }
   };
 
@@ -227,7 +233,11 @@ export default function AdminUsers() {
                         </div>
                         <button 
                           onClick={() => handleDeleteUser(user.id)}
-                          className="w-12 h-12 flex items-center justify-center text-slate-400 hover:text-rose-600 bg-white border border-white rounded-[20px] shadow-lg transition-all hover:scale-105 active:scale-95"
+                          title={deletingId === user.id ? "Nhấn lần nữa để xóa" : "Xóa"}
+                          className={cn(
+                            "w-12 h-12 flex items-center justify-center border rounded-[20px] shadow-lg transition-all active:scale-95",
+                            deletingId === user.id ? "bg-rose-500 text-white border-rose-500 hover:scale-105" : "bg-white text-slate-400 hover:text-rose-600 border-white hover:scale-105"
+                          )}
                         >
                           <Trash2 className="w-5 h-5" />
                         </button>

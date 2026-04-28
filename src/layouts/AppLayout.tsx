@@ -1,14 +1,48 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { LayoutDashboard, FileText, CheckSquare, Bell, Users, Settings, LogOut, Menu, X, Building2, Map, FolderCog, Sparkles } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { db } from '../lib/firebase';
+import { Task } from '../types';
 
 export default function AppLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [hasUnreadAlerts, setHasUnreadAlerts] = useState(false);
   const { userProfile, logout, isAdminOrManager } = useAuth();
   const location = useLocation();
+
+  useEffect(() => {
+    const checkNotifications = async () => {
+      if (!userProfile) return;
+      try {
+        const tasksQuery = query(
+          collection(db, 'tasks'),
+          where('assigneeIds', 'array-contains', userProfile.id)
+        );
+        const snapshot = await getDocs(tasksQuery);
+        const now = new Date();
+        
+        let hasUnread = false;
+        snapshot.docs.forEach(doc => {
+          const task = doc.data() as Task;
+          if (task.status === 'completed') return;
+          const deadlineDate = new Date(task.deadline);
+          const timeDiff = deadlineDate.getTime() - now.getTime();
+          const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+          if (daysDiff <= 3) {
+            hasUnread = true;
+          }
+        });
+        setHasUnreadAlerts(hasUnread);
+      } catch (err) {
+        console.error('Error checking notifications', err);
+      }
+    };
+    checkNotifications();
+  }, [userProfile, location.pathname]);
 
   const navigation = [
     { name: 'Dashboard', href: '/', icon: LayoutDashboard },
@@ -165,10 +199,10 @@ export default function AppLayout() {
               Hệ thống Online
             </div>
             
-            <button className="relative p-2 text-slate-500 hover:text-brand-600 transition-colors">
+            <Link to="/notifications" className="relative p-2 text-slate-500 hover:text-brand-600 transition-colors">
               <Bell className="w-5 h-5" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-rose-500 rounded-full border-2 border-brand-50"></span>
-            </button>
+              {hasUnreadAlerts && <span className="absolute top-1 right-1 w-2 h-2 bg-rose-500 rounded-full border-2 border-brand-50 animate-pulse"></span>}
+            </Link>
           </div>
         </header>
 
