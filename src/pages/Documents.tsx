@@ -71,10 +71,10 @@ export default function Documents() {
     
     const searchLower = searchTerm.toLowerCase();
     const matchesSearch = searchTerm 
-      ? (d.title.toLowerCase().includes(searchLower) || 
-         d.description.toLowerCase().includes(searchLower) ||
-         d.brand?.toLowerCase().includes(searchLower) ||
-         d.tags?.some(tag => tag.toLowerCase().includes(searchLower)))
+      ? (d.title?.toLowerCase()?.includes(searchLower) || 
+         d.description?.toLowerCase()?.includes(searchLower) ||
+         d.brand?.toLowerCase()?.includes(searchLower) ||
+         d.tags?.some(tag => tag?.toLowerCase()?.includes(searchLower)))
       : true;
 
     return matchesCategory && matchesSearch;
