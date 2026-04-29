@@ -3,7 +3,7 @@ import { collection, query, orderBy, onSnapshot, getDocs, addDoc, updateDoc, doc
 import { db } from '../lib/firebase';
 import { useAuth } from '../context/AuthContext';
 import { Task, User } from '../types';
-import { CheckCircle2, Circle, Filter, AlertCircle, Plus, X, Search, MoreVertical, Trash2, ChevronRight, Clock, Paperclip, Calendar } from 'lucide-react';
+import { CheckCircle2, Circle, Filter, AlertCircle, Plus, X, Search, MoreVertical, Trash2, Pencil, ChevronRight, Clock, Paperclip, Calendar } from 'lucide-react';
 import { cn, formatDate } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -14,6 +14,8 @@ export default function Tasks() {
   
   // Create task states
   const [showModal, setShowModal] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [users, setUsers] = useState<User[]>([]);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [newTask, setNewTask] = useState<Partial<Task>>({
@@ -112,13 +114,27 @@ export default function Tasks() {
     }
     
     try {
-      await addDoc(collection(db, 'tasks'), {
-        ...newTask,
-        createdBy: userProfile?.id,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      });
+      if (isEditing && editingId) {
+        await updateDoc(doc(db, 'tasks', editingId), {
+           title: newTask.title,
+           description: newTask.description || '',
+           deadline: newTask.deadline,
+           priority: newTask.priority,
+           assigneeIds: newTask.assigneeIds,
+           links: newTask.links || [],
+           updatedAt: new Date().toISOString(),
+        });
+      } else {
+        await addDoc(collection(db, 'tasks'), {
+          ...newTask,
+          createdBy: userProfile?.id,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        });
+      }
       setShowModal(false);
+      setIsEditing(false);
+      setEditingId(null);
       setNewTask({
         title: '',
         description: '',
@@ -130,8 +146,38 @@ export default function Tasks() {
       });
     } catch (err) {
       console.error(err);
-      alert('Có lỗi khi tạo việc!');
+      alert('Có lỗi khi lưu việc!');
     }
+  };
+
+  const handleEditClick = (task: Task) => {
+    setNewTask({
+      title: task.title,
+      description: task.description || '',
+      deadline: task.deadline,
+      priority: task.priority,
+      assigneeIds: task.assigneeIds || [],
+      status: task.status,
+      links: task.links || []
+    });
+    setEditingId(task.id);
+    setIsEditing(true);
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setIsEditing(false);
+    setEditingId(null);
+    setNewTask({
+      title: '',
+      description: '',
+      deadline: new Date().toISOString().slice(0, 10),
+      priority: 'medium',
+      assigneeIds: [],
+      status: 'pending',
+      links: []
+    });
   };
 
   const getPriorityColor = (priority: string) => {
@@ -156,7 +202,20 @@ export default function Tasks() {
           </button>
           {isAdminOrManager && (
             <button 
-              onClick={() => setShowModal(true)}
+              onClick={() => {
+                setIsEditing(false);
+                setEditingId(null);
+                setNewTask({
+                  title: '',
+                  description: '',
+                  deadline: new Date().toISOString().slice(0, 10),
+                  priority: 'medium',
+                  assigneeIds: [],
+                  status: 'pending',
+                  links: []
+                });
+                setShowModal(true);
+              }}
               className="flex-1 md:flex-none justify-center flex items-center gap-2 px-6 py-3 bg-brand-600 text-white text-[13px] font-bold rounded-2xl hover:bg-brand-700 shadow-lg shadow-brand-600/20 transition-all hover:scale-105 active:scale-95"
             >
               <Plus className="w-4 h-4" /> Giao việc mới
@@ -273,7 +332,16 @@ export default function Tasks() {
                           {isOverdue ? 'Quá hạn' : isCompleted ? 'Hoàn tất' : task.status === 'in-progress' ? 'Đang làm' : 'Chưa làm'}
                         </span>
                       </td>
-                      <td className="px-6 py-5 text-right">
+                      <td className="px-6 py-5 text-right flex items-center justify-end gap-1">
+                        {canDelete && (
+                           <button
+                             onClick={(e) => { e.stopPropagation(); handleEditClick(task); }}
+                             className="p-2 rounded-xl text-slate-300 hover:text-brand-600 hover:bg-brand-50 transition-all md:opacity-0 md:group-hover:opacity-100"
+                             title="Chỉnh sửa công việc"
+                           >
+                              <Pencil className="w-5 h-5" />
+                           </button>
+                        )}
                         {canDelete && (
                            <button
                              onClick={(e) => handleDeleteTask(task.id, e)}
@@ -303,7 +371,7 @@ export default function Tasks() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => setShowModal(false)}
+              onClick={handleCloseModal}
               className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
             />
             <motion.form 
@@ -315,10 +383,10 @@ export default function Tasks() {
             >
               <div className="px-8 py-6 border-b border-white/60 flex justify-between items-center bg-white/40">
                 <div>
-                  <h3 className="font-display font-black text-xl text-slate-800 uppercase tracking-tight">Giao việc mới</h3>
-                  <p className="text-xs text-slate-500 font-bold opacity-70">Phân công nhiệm vụ cho đội ngũ</p>
+                  <h3 className="font-display font-black text-xl text-slate-800 uppercase tracking-tight">{isEditing ? 'Chỉnh sửa công việc' : 'Giao việc mới'}</h3>
+                  <p className="text-xs text-slate-500 font-bold opacity-70">{isEditing ? 'Cập nhật nội dung và phân công' : 'Phân công nhiệm vụ cho đội ngũ'}</p>
                 </div>
-                <button type="button" onClick={() => setShowModal(false)} className="w-10 h-10 glass rounded-full flex items-center justify-center text-slate-400 hover:bg-white hover:text-slate-600 transition-all">
+                <button type="button" onClick={handleCloseModal} className="w-10 h-10 glass rounded-full flex items-center justify-center text-slate-400 hover:bg-white hover:text-slate-600 transition-all">
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -423,8 +491,8 @@ export default function Tasks() {
                 </div>
               </div>
               <div className="px-8 py-6 bg-white/40 border-t border-white/60 flex justify-end gap-3">
-                <button type="button" onClick={() => setShowModal(false)} className="px-6 py-3 font-bold text-slate-500 hover:bg-white rounded-2xl transition-all">Hủy bỏ</button>
-                <button type="submit" className="px-8 py-3 bg-brand-600 text-white font-black text-sm uppercase tracking-widest rounded-2xl hover:bg-brand-700 shadow-xl shadow-brand-600/20 transition-all hover:scale-105">Xác nhận giao việc</button>
+                <button type="button" onClick={handleCloseModal} className="px-6 py-3 font-bold text-slate-500 hover:bg-white rounded-2xl transition-all">Hủy bỏ</button>
+                <button type="submit" className="px-8 py-3 bg-brand-600 text-white font-black text-sm uppercase tracking-widest rounded-2xl hover:bg-brand-700 shadow-xl shadow-brand-600/20 transition-all hover:scale-105">{isEditing ? 'Lưu thay đổi' : 'Xác nhận giao việc'}</button>
               </div>
             </motion.form>
           </div>

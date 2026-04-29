@@ -103,7 +103,7 @@ export default function Notifications() {
     }
   };
 
-  const NotificationContent = ({ note }: { note: NotificationItem }) => (
+  const NotificationContent: React.FC<{ note: NotificationItem }> = ({ note }) => (
     <div 
       className={cn(
         "p-5 rounded-xl border border-slate-200 transition-all hover:shadow-md flex gap-4 items-start relative overflow-hidden",
