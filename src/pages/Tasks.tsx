@@ -469,7 +469,22 @@ export default function Tasks() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Giao cho nhân viên <span className="text-rose-500">*</span></label>
+                    <div className="flex items-center justify-between mb-2 ml-1">
+                      <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest">Giao cho nhân viên <span className="text-rose-500">*</span></label>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (newTask.assigneeIds?.length === users.length) {
+                            setNewTask({...newTask, assigneeIds: []});
+                          } else {
+                            setNewTask({...newTask, assigneeIds: users.map(u => u.id)});
+                          }
+                        }}
+                        className="text-[11px] font-bold text-brand-600 hover:text-brand-700 bg-brand-50 px-2 py-1 rounded-md transition-colors"
+                      >
+                        {newTask.assigneeIds?.length === users.length && users.length > 0 ? 'Bỏ chọn tất cả' : 'Giao cho tất cả'}
+                      </button>
+                    </div>
                     <div className="relative">
                       <select 
                         multiple
